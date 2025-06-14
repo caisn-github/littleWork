@@ -84,6 +84,7 @@ public class Main {
         System.err.println("子ChainNode：");
         System.err.println(Arrays.toString(master_child.getChainCode()));
 
+        // 重复5次即可生成五层格密码， 待做
 
 
         // 计算公钥和私钥生成是否合理

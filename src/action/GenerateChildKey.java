@@ -86,7 +86,6 @@ public class GenerateChildKey { //用来实现密钥派生
         // 生成新的子链码
         this.master_child.setChainCode(gen.generate_ChainCode(sha));
 
-        // 于是所有的派生完成
 
     }
 
