@@ -2,7 +2,7 @@ package keyClass;
 
 import java.security.SecureRandom;
 
-public class SecretKey{
+public class SecretKey{  //私钥类
     // 元素： sk短向量
     int n;
     // private int []sk;

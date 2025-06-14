@@ -7,7 +7,7 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 
 import keyClass.*;
-public class GenerateMasterKey{
+public class GenerateMasterKey{  //产生公钥
     SecretKey secret;
     ErrorList errorList;
 

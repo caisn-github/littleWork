@@ -1,12 +1,8 @@
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Scanner;
 
 import action.*;
-import action.GenerateChildKey;
-import action.GenerateMasterKey;
 import keyClass.*;
 public class Main {
     final static int SEEDS_LEN=500;

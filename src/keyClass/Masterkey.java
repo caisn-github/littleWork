@@ -7,7 +7,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import action.*;
-public class Masterkey {
+public class Masterkey {  //公钥类
     public static final int MAX_LEN = 1000;
     // ?? matserkey具有什么元素呢？
     private int n; 

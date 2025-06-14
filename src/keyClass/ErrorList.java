@@ -2,7 +2,7 @@
 package keyClass;
 import java.security.SecureRandom;
 
-public class ErrorList {
+public class ErrorList { //错误向量类
     int n;
     double alpha;
     SecureRandom random;
