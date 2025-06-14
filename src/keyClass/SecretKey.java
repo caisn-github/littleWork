@@ -1,3 +1,5 @@
+package keyClass;
+
 import java.security.SecureRandom;
 
 public class SecretKey{
@@ -25,5 +27,17 @@ public class SecretKey{
 
     public int[] getSk() {
         return this.sk;
+    }
+
+    public void setSk(int []sk) {
+        this.sk = sk;
+    }
+
+    public int getN() {
+        return this.n;
+    }
+
+    public int getQ() {
+        return this.q;
     }
 }

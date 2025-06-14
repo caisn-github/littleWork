@@ -4,8 +4,10 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Scanner;
 
-import src.action.CheckSafe;
-import src.action.GenerateChildKey;
+import action.*;
+import action.GenerateChildKey;
+import action.GenerateMasterKey;
+import keyClass.*;
 public class Main {
     final static int SEEDS_LEN=500;
     // 输入Seeds
@@ -44,50 +46,51 @@ public class Main {
         // 通过seeds初始化random
         SecureRandom random = new SecureRandom(seeds);
 
-
         // 通过random初始化SecretKey和MasterKey
         SecretKey secretKey = new SecretKey(n, q, random);
-        Matserkey master = new Matserkey(n, q, alpha, random);
+        ErrorList errorList = new ErrorList(n, alpha, random);
+        GenerateMasterKey gen= new GenerateMasterKey(secretKey, errorList);
+        Masterkey master = new Masterkey(gen, n, q,  random);
 
         // 产生私钥
         secretKey.generateSk();
+        int []sk = secretKey.getSk();
+        System.err.println("主公钥：");
+        System.err.println(Arrays.toString(sk));
 
         //产生公钥
-        master.generateA();
-        master.generateE();
-        master.generateB(secretKey.getSk());
         master.generatePK_m();
+        byte[] pk_m = master.getPK_m();
+        System.err.println("主公钥：");
+        System.err.println(Arrays.toString(pk_m));
 
         // 然后通过pk_m计算chaincode
-        byte []pk_m = master.getPK_m();
-        MessageDigest sah256 = MessageDigest.getInstance("SHA_256");
-        byte[] hash = sah256.digest(pk_m);
-        byte []chainCode = Arrays.copyOf(hash,32); // 取前32个作为chainCode
-        System.err.println("输出chainCode:");
+        master.getChainCode();
+        byte[] chainCode = master.getChainCode();
+        System.err.println("主ChainCode:");
         System.err.println(Arrays.toString(chainCode));
 
-        int []b = master.getb();
-        System.out.println("输出B:");
-        System.out.println(Arrays.toString(b));
         
-
         //然后基于格基伪随机函数LWE-PRF实现密钥派生
-        GenerateChildKey gen = new GenerateChildKey(master.getA(), q, n, random, alpha);
-        gen.generateChildKey(b, pk_m, chainCode, n);
+        int index = 1; //第二个问题需要输入索引号
+        GenerateChildKey gen_child = new GenerateChildKey(master, secretKey, errorList, index);
+        gen_child.generateChildKey();
+        Masterkey master_child = gen_child.getMasterChild();
+        SecretKey secret_child = gen_child.getSecretChild();
+        System.err.println("子私钥：");
+        System.err.println(Arrays.toString(secret_child.getSk()));
+        System.err.println("子公钥：");
+        System.err.println(Arrays.toString(master_child.getPK_m()));
+        System.err.println("子ChainNode：");
+        System.err.println(Arrays.toString(master_child.getChainCode()));
 
 
-
-
-
-        // int []sk = secretKey.getSk();
-        // System.out.println("输出SK:");
-        // System.out.println(Arrays.toString(sk));
 
         // 计算公钥和私钥生成是否合理
-        CheckSafe safe = new CheckSafe(b, master.getA(), secretKey.getSk(), n);
-        safe.calculateE();
-        int e[] = safe.getE();
-        System.err.println(Arrays.toString(e));
+        // CheckSafe safe = new CheckSafe(b, master.getA(), secretKey.getSk(), n);
+        // safe.calculateE();
+        // int e[] = safe.getE();
+        // System.err.println(Arrays.toString(e));
     }
 
 }
