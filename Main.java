@@ -23,17 +23,17 @@ public class Main {
         System.out.println(Arrays.toString(seeds));
     }
     public static void main (String []args) {
+        // 初始化参数
         int n = 512; //维度512
         int q = 1 << 23; //模数2^23
         q = q-1; // 取模一般取的是素数
         double sigma = 0.01;
 
+        // 获取seed
         System.out.println("请输入SEED:");
         String buffer = inputBuffer();
         byte []seeds = new byte[buffer.length()]; // seeds是32字节，所以后续要转化为bytes[]类型
-
         copyBuffer(buffer, seeds);
-
         System.out.println(Arrays.toString(seeds));
 
         // 通过seeds初始化random
@@ -43,16 +43,27 @@ public class Main {
         SecretKey secretKey = new SecretKey(n, q, random);
         Matserkey master = new Matserkey(n, q, sigma, random);
 
+        // 产生私钥
         secretKey.generateSk();
-        int []sk = secretKey.getSk();
 
+        //产生公钥
         master.generateA();
         master.generateE();
+        master.generateB(secretKey.getSk());
 
-        System.out.println("输出SK:");
-        System.out.println(Arrays.toString(sk));
+        double []b = master.getb();
+        System.out.println("输出B:");
+        System.out.println(Arrays.toString(b));
 
+        // int []sk = secretKey.getSk();
+        // System.out.println("输出SK:");
+        // System.out.println(Arrays.toString(sk));
 
+        // 计算公钥和私钥生成是否合理
+        CheckSafe safe = new CheckSafe(b, master.getA(), secretKey.getSk(), n);
+        safe.calculateE();
+        double e[] = safe.getE();
+        System.err.println(Arrays.toString(e));
     }
 
 }

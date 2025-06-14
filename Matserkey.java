@@ -7,7 +7,7 @@ public class Matserkey {
     private int [][]A;  // 因为后续要使用模q进行计算，所以
 
     // 矩阵A, 以及整形向量b,
-    private int []b;
+    private double []b;
     SecureRandom random;
     int q;
     private double[]e;
@@ -18,7 +18,7 @@ public class Matserkey {
     /// 然后数据的init：
     public Matserkey(int n, int q,double sigma, SecureRandom random) {
         this.n = n;
-        this.b = new int[this.n];
+        this.b = new double[this.n];
         this.A = new int[this.n][this.n];
         this.e = new double[this.n];
         this.q = q ;
@@ -58,6 +58,20 @@ public class Matserkey {
         }
     } 
     
+    public void generateB(int []sk) {
+        // 计算B, B = A * sk // 一个个乘起来
+        for (int i = 0 ; i < this.n;i++) {
+            b[i] = 0;
+                double tmp = 0;
+            for (int j = 0;j<this.n;j++) {
+                tmp = A[i][j] * sk[j] + this.e[j];
+            }
+            b[i] += tmp;
+        }
+        return ;
+        
+    }
+
     /// 然后数据的get和set
     public int getN() {
         return this.n;   
@@ -67,11 +81,11 @@ public class Matserkey {
         return ; 
     }
 
-    public int[] getb() {
+    public double[] getb() {
         return this.b;
     }
 
-    public void setb(int []b) {
+    public void setb(double []b) {
         this.b = b;
     }
     public int [][] getA() {
