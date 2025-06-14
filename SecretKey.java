@@ -3,6 +3,7 @@ import java.security.SecureRandom;
 public class SecretKey{
     // 元素： sk短向量
     int n;
+    // private int []sk;
     private int []sk;
     int q;
     SecureRandom random;
@@ -11,7 +12,7 @@ public class SecretKey{
     public SecretKey(int n, int q, SecureRandom random) {
         this.n = n;
         this.sk = new int[n];
-        this.q = q-1;
+        this.q = q;
         this.random = random;
     }
 

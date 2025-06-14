@@ -21,7 +21,7 @@ public class Matserkey {
         this.b = new int[this.n];
         this.A = new int[this.n][this.n];
         this.e = new double[this.n];
-        this.q = q;
+        this.q = q ;
         this.random = random;
         this.sigma = sigma;
         this.bound = (int)Math.ceil(6 * sigma);

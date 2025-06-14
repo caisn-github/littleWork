@@ -3,10 +3,3 @@ public class Hello {
         System.out.println("Hello, VS CODE");
     }
 }
-
-
-
-public static Matserkey generateMaterKey(byte []seed) {
-
-
-}
