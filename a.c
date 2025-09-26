@@ -2,10 +2,15 @@
 #include <linux/kernel.h>
 #include <linux/kprobes.h>
 #include <linux/mm.h>
+#include <linux/page-flags.h>
 
 MODULE_LICENSE("GPL");
-long evict_pages = 0;
-long refault_pages = 0;
+MODULE_AUTHOR("caisn");
+
+static long file_evict_pages = 0;
+static long file_refault_pages = 0;
+static long anonymous_evict_pages = 0;
+static long anonymous_refault_pages = 0;
 
 // 对于evict的断点打在什么位置
 static struct kprobe evict_kprobe = {
@@ -17,6 +22,18 @@ static struct kprobe refault_kprobe = {
 };
 
 
+static int get_page_type(struct page *page) {
+	if(PageAnon(page)) return 1; //用1表示是匿名页
+	
+	//if(PageSwapCache(page)) return 1;
+
+	if(page->mapping && page->mapping->host) return 2;
+
+	if (page->mapping == NULL) return 1;
+
+	return 0;
+
+}
 
 // Kprobe前置函数，在原函数执行之前执行
 static int evict_handler_pre(struct kprobe *p, struct pt_regs *regs)
@@ -27,15 +44,27 @@ static int evict_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	if (!page) return 0;
 
 	folio = page_folio(page);
-	evict_pages += folio_nr_pages(folio);
+	int type = get_page_type(&folio->page);	
+	int pages = folio_nr_pages(folio);
 	unsigned int order, nr_pages;
 
 	order = folio_order(folio);
 	nr_pages = folio_nr_pages(folio);
 
-	printk(KERN_INFO "EVICT: folio=0x%lx, order=%u, nr_pages=%u, pid=%d, total_evict_pages=%ld\n",
-           (unsigned long)folio, order,
-           nr_pages, current->pid, evict_pages);
+	if (type == 1) {
+		anonymous_evict_pages  += pages;
+		printk(KERN_INFO "ANONYMOUS REFAULT: folio=0x%lx, order=%u, nr_pages=%u, pid=%d,total_refault_pages=%ld\n",
+           (unsigned long)folio, folio_order(folio),
+           pages, current->pid, anonymous_evict_pages);
+	
+	}
+	else if (type == 2) {
+		file_evict_pages  += pages;
+		printk(KERN_INFO "FILE REFAULT: folio=0x%lx, order=%u, nr_pages=%u, pid=%d,total_refault_pages=%ld\n",
+           (unsigned long)folio, folio_order(folio),
+           pages, current->pid, file_evict_pages);
+	
+	} 
 
 	return 0; //返回0表示继续执行原函数
 
@@ -48,11 +77,23 @@ static int refault_handler_pre(struct kprobe *p, struct pt_regs *regs)
 
 	if (!folio) return 0;
 	
-	refault_pages  += folio_nr_pages(folio);
-
-	printk(KERN_INFO "REFAULT: folio=0x%lx, order=%u, nr_pages=%u, pid=%d,total_refault_pages=%ld\n",
+	int type = get_page_type(&folio->page);	
+	int pages = folio_nr_pages(folio);
+	
+	if (type == 1) {
+		anonymous_refault_pages  += pages;
+		printk(KERN_INFO "ANONYMOUS REFAULT: folio=0x%lx, order=%u, nr_pages=%u, pid=%d,total_refault_pages=%ld\n",
            (unsigned long)folio, folio_order(folio),
-           folio_nr_pages(folio), current->pid, refault_pages);
+           pages, current->pid, anonymous_refault_pages);
+	}
+	else if (type == 2) {
+		file_refault_pages  += pages;
+		printk(KERN_INFO "FILE REFAULT: folio=0x%lx, order=%u, nr_pages=%u, pid=%d,total_refault_pages=%ld\n",
+           (unsigned long)folio, folio_order(folio),
+           pages, current->pid, file_refault_pages);
+	
+	} 
+
 
     	return 0;
 }
@@ -62,8 +103,10 @@ static int refault_handler_pre(struct kprobe *p, struct pt_regs *regs)
 static int __init folio_trace_init(void)
 {
 	int ret;
-	evict_pages=0;
-	refault_pages=0;
+	file_evict_pages=0;
+	file_refault_pages=0;
+	anonymous_evict_pages=0;
+	anonymous_refault_pages=0;
 
 	printk(KERN_INFO "Installing folio trace kprobes\n");
 
